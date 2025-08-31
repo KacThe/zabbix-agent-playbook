@@ -1,0 +1,48 @@
+---
+- name: Install Zabbix Agent 2 on Ubuntu 24
+  hosts: all
+  become: yes
+  vars:
+    zabbix_server_ip: "192.168.1.100"  # <- Set Zabbix server IP here
+
+  tasks:
+    - name: Add Zabbix repository
+      apt:
+        deb: "https://repo.zabbix.com/zabbix/7.2/release/ubuntu/pool/main/z/zabbix-release/zabbix-release_latest_7.2+ubuntu24.04_all.deb" #7.2 version
+        state: present
+
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    - name: Install Zabbix Agent 2
+      apt:
+        name: zabbix-agent2
+        state: present
+
+    - name: Configure Zabbix Agent to connect to Zabbix Server
+      lineinfile:
+        path: /etc/zabbix/zabbix_agent2.conf
+        regexp: '^Server='
+        line: "Server={{ zabbix_server_ip }}"
+      notify: Restart zabbix-agent2
+
+    - name: Configure Zabbix Agent IP
+      lineinfile:
+        path: /etc/zabbix/zabbix_agent2.conf
+        regexp: '^ServerActive='
+        line: "ServerActive={{ zabbix_server_ip }}"
+      notify: Restart zabbix-agent2
+
+    - name: Set Hostname in Zabbix Agent config
+      lineinfile:
+        path: /etc/zabbix/zabbix_agent2.conf
+        regexp: '^Hostname='
+        line: "Hostname={{ inventory_hostname }}"
+      notify: Restart zabbix-agent2
+
+  handlers:
+    - name: Restart zabbix-agent2
+      service:
+        name: zabbix-agent2
+        state: restarted

@@ -1,0 +1,4 @@
+[all]
+vm-1    ansible_host=127.0.0.1  ansible_user=admin
+vm-2    ansible_host=127.0.0.2  ansible_user=admin
+vm-3    ansible_host=127.0.0.3  ansible_user=admin
